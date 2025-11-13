@@ -1,0 +1,28 @@
+{
+  "name": "testing-canary-deployment",
+  "version": "1.0.0",
+  "main": "handler.js",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "deploy:canary": "serverless deploy --stage prod",
+    "remove": "serverless remove",
+    "logs": "serverless logs -f api -t",
+    "test:endpoint": "node test-endpoint-v3.js",
+    "test:endpoint:v2": "node test-endpoint.js",
+    "monitor": "node monitoring-v3.js",
+    "monitor:function": "node monitoring-v3.js"
+  },
+  "keywords": ["serverless", "canary", "deployment", "aws", "lambda"],
+  "author": "",
+  "license": "ISC",
+  "description": "Demo de deploy Canary com Serverless Framework",
+  "dependencies": {
+    "@aws-sdk/client-codedeploy": "^3.658.0",
+    "@aws-sdk/client-cloudwatch": "^3.658.0",
+    "@aws-sdk/client-lambda": "^3.658.0"
+  },
+  "devDependencies": {
+    "serverless": "^4.23.0",
+    "serverless-plugin-canary-deployments": "^0.7.0"
+  }
+}

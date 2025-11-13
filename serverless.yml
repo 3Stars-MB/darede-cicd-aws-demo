@@ -1,0 +1,80 @@
+service: "lambda-canary-demo"
+
+frameworkVersion: "4"
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  stage: "dev"
+  lambdaHashingVersion: 20201221
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - codedeploy:*
+            - lambda:*
+          Resource: "*"
+
+functions:
+  hello:
+    handler: handler.hello
+    events:
+      - http:
+          path: /hello
+          method: get
+    deploymentSettings:
+      type: Canary10Percent5Minutes
+      alias: Live
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+      alarms:
+        - AliasErrorMetricGreaterThanZeroAlarm
+        - LatestVersionErrorMetricGreaterThanZeroAlarm
+
+  preHook:
+    handler: hooks.preTrafficHook
+
+  postHook:
+    handler: hooks.postTrafficHook
+
+resources:
+  Resources:
+    AliasErrorMetricGreaterThanZeroAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmDescription: Lambda function errors
+        ComparisonOperator: GreaterThanThreshold
+        EvaluationPeriods: 2
+        MetricName: Errors
+        Namespace: AWS/Lambda
+        Period: 60
+        Statistic: Sum
+        Threshold: 0
+        Dimensions:
+          - Name: FunctionName
+            Value: !Ref HelloLambdaFunction
+          - Name: Resource
+            Value: !Sub "${HelloLambdaFunction}:Live"
+
+    LatestVersionErrorMetricGreaterThanZeroAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmDescription: Lambda function errors
+        ComparisonOperator: GreaterThanThreshold
+        EvaluationPeriods: 2
+        MetricName: Errors
+        Namespace: AWS/Lambda
+        Period: 60
+        Statistic: Sum
+        Threshold: 0
+        Dimensions:
+          - Name: FunctionName
+            Value: !Ref HelloLambdaFunction
+          - Name: Resource
+            Value: !Ref HelloLambdaFunction
+
+plugins:
+  - serverless-plugin-canary-deployments
