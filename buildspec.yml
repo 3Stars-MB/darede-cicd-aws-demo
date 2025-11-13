@@ -5,13 +5,12 @@ phases:
     runtime-versions:
       nodejs: 20
     commands:
-      - npm install -g serverless
       - npm install
 
   build:
     commands:
-      - npm run deploy
+      - npx sls deploy
 
 artifacts:
   files:
-    - '**/*'
+    - "**/*"
